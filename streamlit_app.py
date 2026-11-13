@@ -2,15 +2,129 @@ import streamlit as st
 from supabase import create_client
 from curriculum import CURRICULUM, MONTHS
 
-st.set_page_config(page_title="AI Engineering Roadmap", page_icon="🧭", layout="wide")
+st.set_page_config(
+    page_title="StudyBae — Study together. Grow together.",
+    page_icon="💗",
+    layout="wide",
+    initial_sidebar_state="collapsed",
+)
 
 st.markdown("""
 <style>
-.block-container {padding-top: 1.5rem; max-width: 1150px;}
-[data-testid="stMetric"] {background: rgba(120,120,120,.07); padding: 12px; border-radius: 10px;}
-.small-muted {color: #888; font-size: .9rem;}
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@600;700;800&display=swap');
+
+:root {
+  --berry:#8f263e; --rose:#d95f70; --coral:#f18b91; --pink:#f6b5b6;
+  --blush:#fbe2dc; --cream:#fff6ed; --paper:#fffaf5; --ink:#43252b;
+  --muted:#896c6c; --line:#efc9c1; --white:#fffdfb;
+}
+html, body, [data-testid="stAppViewContainer"] {
+  background:var(--coral) !important; color:var(--ink);
+  font-family:'DM Sans',sans-serif;
+}
+[data-testid="stHeader"] {background:transparent;}
+[data-testid="stToolbar"] {right:1rem;}
+[data-testid="stDecoration"] {display:none;}
+.block-container {max-width:1180px; padding:1.2rem 2.2rem 4rem;}
+
+/* Hide the default sidebar: this is a full-width editorial layout. */
+section[data-testid="stSidebar"] {display:none;}
+div[data-testid="stVerticalBlock"] {gap:.85rem;}
+h1,h2,h3 {color:var(--berry)!important; font-family:'Playfair Display',serif!important; letter-spacing:-.025em;}
+h1 {font-size:clamp(2.25rem,5vw,4.4rem)!important; line-height:1.03!important;}
+h2 {font-size:clamp(1.55rem,3vw,2.3rem)!important;}
+h3 {font-size:1.28rem!important;}
+p, label, li, .stMarkdown {color:var(--ink);}
+small, .muted {color:var(--muted)!important;}
+/* Brand masthead */
+.brandbar {
+ display:flex; align-items:center; justify-content:space-between; gap:1rem;
+ padding:1rem 1.4rem; margin:0 0 1.1rem; border:1.5px solid #8f263e;
+ border-radius:18px; background:var(--cream); box-shadow:0 5px 0 rgba(143,38,62,.16);
+}
+.brandmark {font-family:'Playfair Display',serif; font-size:1.55rem; font-weight:800;color:var(--berry);}
+.brandmark span {color:var(--rose);}
+.brandtag {font-size:.78rem; letter-spacing:.08em; text-transform:uppercase;color:var(--muted);}
+.hero {
+ position:relative; overflow:hidden; padding:clamp(1.5rem,5vw,4.5rem);
+ border:2px solid var(--berry); border-radius:24px;
+ background:var(--blush);
+ box-shadow:0 9px 0 rgba(143,38,62,.22);
+}
+.hero:before,.hero:after {position:absolute; font-size:clamp(3rem,8vw,7rem); opacity:.20; pointer-events:none;}
+.hero:before {content:"♥  ✿"; right:4%; top:5%; transform:rotate(12deg);}
+.hero:after {content:"♡  ✦"; right:9%; bottom:3%; transform:rotate(-12deg);}
+.eyebrow {font-size:.72rem; text-transform:uppercase; letter-spacing:.18em; font-weight:700;color:var(--rose);margin-bottom:.7rem;}
+.hero-copy {max-width:690px; position:relative; z-index:1;}
+.hero-copy p {font-size:1.05rem; line-height:1.7; max-width:570px;color:#71444b;}
+.hero-note {display:inline-block;margin-top:1rem;padding:.55rem .9rem;border-radius:99px;background:#f4c1b7;color:var(--berry);font-size:.82rem;font-weight:700;}
+/* Navigation tabs */
+div[data-testid="stTabs"] > div:first-child {border-bottom:1px solid #a94255; margin:1.2rem 0 1.5rem;}
+div[data-testid="stTabs"] button[role="tab"] {border-radius:999px!important;padding:.65rem 1.15rem!important;color:#672c3b!important;font-weight:700!important;}
+div[data-testid="stTabs"] button[role="tab"][aria-selected="true"] {background:var(--berry)!important;color:#fff!important;}
+div[data-testid="stTabs"] [data-baseweb="tab-highlight"] {display:none;}
+/* Cream paper surfaces */
+.paper {
+ background:var(--paper); border:1.5px solid var(--line); border-radius:18px;
+ padding:1.25rem 1.35rem; box-shadow:0 4px 0 rgba(143,38,62,.10);
+}
+.paper-soft {background:var(--cream);border:1px solid var(--line);border-radius:16px;padding:1rem 1.1rem;}
+.section-kicker {font-size:.72rem;text-transform:uppercase;letter-spacing:.14em;color:var(--rose);font-weight:800;}
+.metric-card {background:var(--paper);border:1.5px solid var(--line);border-radius:16px;padding:1rem 1.1rem;min-height:110px;}
+.metric-value {font-family:'Playfair Display',serif;font-size:2rem;font-weight:800;color:var(--berry);}
+.metric-label {font-size:.78rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);}
+.month-card {background:var(--paper);border:1.5px solid var(--line);border-radius:16px;padding:1rem 1.1rem;margin-bottom:.2rem;}
+.month-number {font-family:'Playfair Display',serif;font-size:1.5rem;color:var(--rose);font-weight:800;}
+/* Inputs and buttons */
+.stTextInput input,.stTextArea textarea,.stSelectbox div[data-baseweb="select"] > div {
+ background:#fffdfb!important;border:1px solid #dfaaa5!important;border-radius:12px!important;color:var(--ink)!important;
+}
+.stButton button,.stFormSubmitButton button {
+ background:var(--berry)!important;color:white!important;border:0!important;border-radius:999px!important;
+ padding:.62rem 1.2rem!important;font-weight:700!important;min-height:44px;
+}
+.stButton button:hover,.stFormSubmitButton button:hover {background:#6e1d31!important;border:0!important;}
+.stProgress > div > div {background:#ed9b9a!important;border-radius:99px;}
+.stProgress > div {background:#f3d4ca!important;border-radius:99px;}
+div[data-testid="stExpander"] {background:var(--paper);border:1px solid var(--line);border-radius:14px;overflow:hidden;}
+div[data-testid="stExpander"] summary {font-weight:700;color:var(--berry);}
+.stCheckbox label {line-height:1.45;}
+div[data-testid="stAlert"] {border-radius:14px;}
+hr {border-color:#e8b7ae!important;}
+.footer {text-align:center;color:#754650;font-size:.8rem;padding:2rem .5rem 0;}
+/* Mobile / iPhone-width treatment */
+@media(max-width:768px) {
+ .block-container {padding:.65rem .75rem 2.5rem!important;}
+ .brandbar {padding:.8rem 1rem;border-radius:14px;margin-bottom:.7rem;}
+ .brandmark {font-size:1.3rem;}
+ .brandtag {font-size:.62rem;}
+ .hero {padding:1.5rem 1.15rem;border-radius:18px;}
+ .hero-copy p {font-size:.94rem;}
+ div[data-testid="stTabs"] > div:first-child {overflow-x:auto; white-space:nowrap;}
+ div[data-testid="stTabs"] button[role="tab"] {padding:.55rem .8rem!important;font-size:.82rem!important;}
+ .paper,.month-card {padding:1rem;border-radius:14px;}
+ .metric-card {min-height:90px;padding:.8rem;}
+ .metric-value {font-size:1.55rem;}
+ .stButton button,.stFormSubmitButton button {width:100%;}
+ h1 {font-size:2.3rem!important;}
+}
+@media(prefers-reduced-motion:reduce) { * {scroll-behavior:auto!important;transition:none!important; } }
 </style>
 """, unsafe_allow_html=True)
+
+def brandbar():
+    st.markdown("""
+    <div class="brandbar">
+      <div><div class="brandmark">Study<span>Bae</span> ♥</div>
+      <div class="brandtag">Study together. Grow together.</div></div>
+      <div class="brandtag">A little progress, every day ✿</div>
+    </div>
+    """, unsafe_allow_html=True)
+
+def metric_card(label, value, note=""):
+    st.markdown(f"""<div class="metric-card"><div class="metric-label">{label}</div>
+    <div class="metric-value">{value}</div><div class="muted" style="font-size:.78rem">{note}</div></div>""",
+    unsafe_allow_html=True)
 
 def get_client():
     try:
@@ -78,8 +192,8 @@ def logout():
 
 
 def auth_screen(client):
-    st.title("🧭 AI Engineering Roadmap")
-    st.caption("Create your own account. Your progress, notes and evidence stay separate from everyone else.")
+    st.title("Welcome to StudyBae ♥")
+    st.caption("Sign in to your own space. Your progress, notes and evidence stay private to your account.")
     tab1, tab2 = st.tabs(["Sign in", "Create account"])
     with tab1:
         with st.form("login"):
@@ -124,39 +238,19 @@ def topic_progress(topic, progress):
     return complete / len(tasks) if tasks else 0
 
 
+
 def main():
     client = st.session_state.client
-    st.sidebar.title("Your roadmap")
-    st.sidebar.caption(st.session_state.get("email", ""))
-    if st.sidebar.button("Sign out", use_container_width=True):
-        logout()
-
     try:
         profile = load_profile(client)
-        with st.sidebar.expander("Personalize your journey", expanded=not bool(profile)):
-            roles = ["AI Engineer", "Applied AI Engineer", "AI Solution Architect", "ML Engineer", "Other"]
-            with st.form("profile_form"):
-                display_name = st.text_input("Your name / nickname", value=profile.get("display_name", ""))
-                saved_role = profile.get("target_role", "AI Engineer")
-                target_role = st.selectbox("Target role", roles, index=roles.index(saved_role) if saved_role in roles else 0)
-                journey_notes = st.text_area("Personal goals / context", value=profile.get("journey_notes", ""), placeholder="Your goals, milestones or constraints")
-                profile_saved = st.form_submit_button("Save my journey")
-            if profile_saved:
-                try:
-                    save_profile(client, display_name, target_role, journey_notes)
-                    st.success("Your personal journey is saved.")
-                    st.rerun()
-                except Exception as exc:
-                    st.error(f"Could not save profile: {exc}")
-    except Exception as exc:
-
-        st.sidebar.error(f"Profile setup error: {exc}")
+    except Exception:
+        profile = {}
 
     try:
         progress = load_progress(client)
     except Exception as exc:
         st.error(f"Could not load your cloud progress: {exc}")
-        st.info("Check that the SQL setup has been run in Supabase and that the app secrets are correct.")
+        st.info("Check the Supabase SQL setup and app secrets.")
         st.stop()
 
     topics = flatten_topics()
@@ -165,65 +259,87 @@ def main():
     done_topics = sum(topic_progress(t, progress) == 1 for t in topics)
     done_tasks = sum(bool(row.get("done")) for row in progress.values())
     total_tasks = sum(len(t["tasks"]) for t in topics)
-
-    st.title("🧭 AI Engineering Roadmap")
-    try:
-        profile = load_profile(client)
-    except Exception:
-        profile = {}
-    greeting = f"Welcome, {profile.get('display_name')} · " if profile.get("display_name") else ""
+    next_topic = next((t for t in topics if topic_progress(t, progress) < 1), None)
+    name = profile.get("display_name", "").strip()
     target = profile.get("target_role", "AI Engineer")
-    st.caption(f"{greeting}Your target: {target}. Learn it → build it → validate it → publish the evidence.")
-    c1, c2, c3 = st.columns(3)
-    c1.metric("Weighted progress", f"{overall:.0%}")
-    c2.metric("Topics completed", f"{done_topics}/{len(topics)}")
-    c3.metric("Practice checkpoints", f"{done_tasks}/{total_tasks}")
+
+    brandbar()
+    st.markdown(f"""
+    <section class="hero">
+      <div class="hero-copy">
+        <div class="eyebrow">Your shared little corner of ambition</div>
+        <h1>Big dreams.<br>Small daily wins.</h1>
+        <p>{'Welcome back, ' + name + '!' if name else 'A space to learn, build and keep each other going.'}
+        Your path to becoming an <b>{target}</b> starts with one focused session at a time.</p>
+        <div class="hero-note">♡ Learn it · Build it · Ship it ♡</div>
+      </div>
+    </section>
+    """, unsafe_allow_html=True)
+
+    st.write("")
+    m1,m2,m3 = st.columns(3)
+    with m1: metric_card("Your progress", f"{overall:.0%}", "Across the full roadmap")
+    with m2: metric_card("Topics finished", f"{done_topics}/{len(topics)}", "One step at a time")
+    with m3: metric_card("Practice checks", f"{done_tasks}/{total_tasks}", "Proof beats plans")
+
     st.progress(overall)
+    tab_home, tab_plan, tab_project, tab_us = st.tabs(["♡ Our space", "✿ Learning plan", "⌘ Our project", "♥ Our rules"])
 
-    tab_overview, tab_syllabus, tab_project, tab_rules = st.tabs(["Overview", "Weekly syllabus", "Project & GitHub", "How we work"])
-
-    with tab_overview:
-        st.subheader("Six-month roadmap")
-        for month in MONTHS:
-            month_topics = [t for t in topics if t["month"] == month["number"]]
-            weight = sum(t["weight"] for t in month_topics)
-            pct = sum(t["weight"] * topic_progress(t, progress) for t in month_topics) / weight if weight else 0
-            with st.container(border=True):
-                left, right = st.columns([4, 1])
-                left.markdown(f"**Month {month['number']}: {month['name']}**")
-                left.caption(month["outcome"])
-                right.metric("Progress", f"{pct:.0%}")
-                st.progress(pct)
-                st.caption(" · ".join(month["deliverables"]))
-        st.subheader("Current focus")
-        next_topic = next((t for t in topics if topic_progress(t, progress) < 1), None)
+    with tab_home:
+        st.markdown('<div class="section-kicker">The next chapter</div>', unsafe_allow_html=True)
+        st.subheader("A little progress goes a long way.")
         if next_topic:
-            st.info(f"**{next_topic['title']}** — {next_topic['why']}\n\nSuggested practice: {next_topic['example']}")
+            st.markdown(f"""
+            <div class="paper">
+              <div class="section-kicker">Up next · Month {next_topic['month']}</div>
+              <h2 style="margin:.35rem 0">{next_topic['title']}</h2>
+              <p>{next_topic['why']}</p>
+              <div class="paper-soft"><b>Try building this:</b><br>{next_topic['example']}</div>
+            </div>
+            """, unsafe_allow_html=True)
         else:
-            st.success("All roadmap topics are complete. Time to polish the portfolio and interview stories.")
+            st.success("Every roadmap topic is complete. Time to polish the portfolio and interview stories.")
+        st.write("")
+        st.markdown('<div class="section-kicker">The six-month story</div>', unsafe_allow_html=True)
+        for month in MONTHS:
+            mt = [t for t in topics if t["month"] == month["number"]]
+            weight = sum(t["weight"] for t in mt)
+            pct = sum(t["weight"] * topic_progress(t, progress) for t in mt) / weight if weight else 0
+            with st.container():
+                st.markdown(f"""
+                <div class="month-card">
+                  <div style="display:flex;justify-content:space-between;gap:1rem;align-items:center">
+                    <div><div class="section-kicker">Chapter {month['number']}</div>
+                    <div style="font-family:'Playfair Display',serif;font-size:1.25rem;font-weight:800;color:#8f263e">{month['name']}</div></div>
+                    <div class="month-number">{pct:.0%}</div>
+                  </div><p style="margin:.45rem 0;color:#76565b">{month['outcome']}</p>
+                  <div style="font-size:.82rem;color:#896c6c">✦ {' · '.join(month['deliverables'])}</div>
+                </div>
+                """, unsafe_allow_html=True)
+                st.progress(pct)
 
-    with tab_syllabus:
-        st.subheader("Weekly targets")
-        st.caption("A week is a target, not a timer. If a topic needs more practice, finish it properly before moving on.")
-        month_filter = st.selectbox("Filter by month", ["All months"] + [f"Month {m['number']} — {m['name']}" for m in MONTHS])
+    with tab_plan:
+        st.markdown('<div class="section-kicker">Your roadmap, one week at a time</div>', unsafe_allow_html=True)
+        st.subheader("The learning library")
+        st.caption("A week is a target, not a timer. Finish the work properly before moving on.")
+        month_filter = st.selectbox("Browse by chapter", ["All chapters"] + [f"Chapter {m['number']} — {m['name']}" for m in MONTHS])
         for week in CURRICULUM:
-            if month_filter != "All months" and not month_filter.startswith(f"Month {week['month']} "):
+            if month_filter != "All chapters" and not month_filter.startswith(f"Chapter {week['month']} "):
                 continue
             week_topics = week["topics"]
             w = sum(t["weight"] for t in week_topics)
             pct = sum(t["weight"] * topic_progress(t, progress) for t in week_topics) / w if w else 0
-            with st.expander(f"Week {week['week']}: {week['title']}  ·  {pct:.0%}", expanded=(pct < 1 and week['week'] == next((x['week'] for x in CURRICULUM if any(topic_progress(t, progress) < 1 for t in x['topics'])), -1))):
-                st.markdown(f"**Outcome:** {week['outcome']}")
+            with st.expander(f"Week {week['week']}  ·  {week['title']}  ·  {pct:.0%}", expanded=False):
+                st.markdown(f"**The outcome:** {week['outcome']}")
                 for topic in week_topics:
                     tp = topic_progress(topic, progress)
-                    st.markdown(f"---\n#### {topic['title']}  ·  Weight {topic['weight']}/5  ·  {tp:.0%}")
+                    st.markdown(f"---\n### {topic['title']}  ·  {tp:.0%}")
                     st.caption(topic["why"])
-                    st.markdown(f"**Practice example:** {topic['example']}")
+                    st.markdown(f"**Build this:** {topic['example']}")
                     for i, task in enumerate(topic["tasks"]):
                         task_id = f"{topic['id']}::{i}"
                         existing = progress.get(task_id, {})
-                        key = f"check_{task_id}"
-                        checked = st.checkbox(task, value=bool(existing.get("done")), key=key)
+                        checked = st.checkbox(task, value=bool(existing.get("done")), key=f"check_{task_id}")
                         if checked != bool(existing.get("done")):
                             try:
                                 save_row(client, task_id, done=checked)
@@ -233,37 +349,37 @@ def main():
                     with st.form(f"evidence_{topic['id']}"):
                         existing_meta = progress.get(f"{topic['id']}::meta", {})
                         evidence = st.text_input("GitHub commit / PR / repo URL", value=existing_meta.get("evidence_url", ""), key=f"url_{topic['id']}")
-                        notes = st.text_area("What can you now explain or implement?", value=existing_meta.get("notes", ""), key=f"notes_{topic['id']}", height=70)
-                        save = st.form_submit_button("Save topic evidence")
+                        notes = st.text_area("What can you now explain or implement?", value=existing_meta.get("notes", ""), key=f"notes_{topic['id']}", height=80)
+                        save = st.form_submit_button("Save my evidence")
                     if save:
                         try:
                             save_row(client, f"{topic['id']}::meta", notes=notes, evidence_url=evidence)
                             progress[f"{topic['id']}::meta"] = {"notes": notes, "evidence_url": evidence}
-                            st.success("Evidence saved to your account.")
+                            st.success("Saved to your account ♡")
                         except Exception as exc:
                             st.error(f"Save failed: {exc}")
 
     with tab_project:
-        st.subheader("One evolving project: Applied AI Engineering Lab")
-        st.write("A small, modular engineering project that grows with the syllabus. Each milestone demonstrates the month's actual learning—not a tutorial clone.")
+        st.markdown('<div class="section-kicker">One project. Six chapters.</div>', unsafe_allow_html=True)
+        st.subheader("Applied AI Engineering Lab")
+        st.markdown('<div class="paper-soft">A living engineering project that grows with the syllabus. Every milestone should demonstrate real learning — not another tutorial clone.</div>', unsafe_allow_html=True)
         milestones = [
-            ("Month 1", "Reliable API foundation", "FastAPI service, typed schemas, PostgreSQL, migrations, validation, tests, logging and clean configuration.", "A tested API with a README, API examples and architecture sketch."),
-            ("Month 2", "LLM service layer", "Provider abstraction, prompt/version management, structured outputs, tool calling, streaming, retries and token/cost tracking.", "A small service that accepts a task and returns validated structured output."),
-            ("Month 3", "Document intelligence / RAG", "Ingestion, parsing, chunking, embeddings, hybrid retrieval, reranking, citations and retrieval evaluation.", "A document Q&A API with a small evaluation dataset and measured results."),
-            ("Month 4", "Workflow and agent layer", "A bounded tool-using workflow with state, persistence, approval gates, retries, idempotency and audit trail.", "One reliable workflow; use an agent only where tool choice or branching is genuinely needed."),
-            ("Month 5", "Production readiness", "Docker, cloud deployment, background jobs, caching, monitoring, security controls, rate limits and cost/latency analysis.", "A deployed system with health checks, logs, metrics and a short operational runbook."),
-            ("Month 6", "Architecture case study", "Capacity assumptions, component choices, failure modes, scaling plan, threat model, cost model and trade-off decisions.", "A concise architecture document and a demo you can confidently defend in an interview."),
+            ("01", "Reliable API foundation", "FastAPI service, typed schemas, PostgreSQL, migrations, validation, tests, logging and clean configuration.", "A tested API with a README, API examples and architecture sketch."),
+            ("02", "LLM service layer", "Provider abstraction, prompt/version management, structured outputs, tool calling, streaming, retries and token/cost tracking.", "A small service that accepts a task and returns validated structured output."),
+            ("03", "Document intelligence / RAG", "Ingestion, parsing, chunking, embeddings, hybrid retrieval, reranking, citations and retrieval evaluation.", "A document Q&A API with a small evaluation dataset and measured results."),
+            ("04", "Workflow and agent layer", "A bounded tool-using workflow with state, persistence, approval gates, retries, idempotency and audit trail.", "One reliable workflow; use an agent only where tool choice or branching is genuinely needed."),
+            ("05", "Production readiness", "Docker, cloud deployment, background jobs, caching, monitoring, security controls, rate limits and cost/latency analysis.", "A deployed system with health checks, logs, metrics and a short operational runbook."),
+            ("06", "Architecture case study", "Capacity assumptions, component choices, failure modes, scaling plan, threat model, cost model and trade-off decisions.", "A concise architecture document and a demo you can confidently defend in an interview."),
         ]
-        for month, title, scope, evidence in milestones:
-            with st.container(border=True):
-                st.markdown(f"**{month} — {title}**")
-                st.write(scope)
-                st.caption(f"**Publishable evidence:** {evidence}")
-        st.markdown("### Every meaningful GitHub milestone")
-        st.markdown("- Small commits with clear messages; commit working increments, not just final code.\n- README: problem, architecture, setup, example request/response, limitations.\n- Tests for the behavior you claim works.\n- One short LinkedIn post per meaningful milestone: problem → engineering decision → demo/result → what you learned.\n- Be ready to explain every dependency and design choice. If you cannot explain it, it is not portfolio-ready.")
+        for num,title,scope,evidence in milestones:
+            st.markdown(f"""<div class="month-card"><div class="section-kicker">Milestone {num}</div>
+            <h3>{title}</h3><p>{scope}</p><div class="paper-soft"><b>Publishable proof:</b> {evidence}</div></div>""", unsafe_allow_html=True)
+        st.markdown("### Tiny habits that make the project credible")
+        st.markdown("- Small commits with clear messages; commit working increments, not just final code.\n- README: problem, architecture, setup, example request/response, limitations.\n- Tests for the behavior you claim works.\n- One short LinkedIn post per meaningful milestone: problem → engineering decision → demo/result → what you learned.\n- Be ready to explain every dependency and design choice.")
         st.info("Keep the project repository separate from this tracker repository. The tracker records evidence links; the project repo contains the actual engineering work.")
 
-    with tab_rules:
+    with tab_us:
+        st.markdown('<div class="section-kicker">A few promises to future us</div>', unsafe_allow_html=True)
         st.subheader("Rules that protect our time")
         rules = [
             ("Read-only concepts", "If a concept is low-weight and can be understood from a good explanation plus notes, give it a focused session. Do not manufacture a coding project for it."),
@@ -272,17 +388,41 @@ def main():
             ("No tutorial dependency", "Use docs and examples as references. Build from a small requirement and write the implementation yourself."),
             ("DSA stays bounded", "Revise patterns and practice interview questions. Do not restart a giant problem-count challenge."),
             ("GitHub is evidence", "Commit meaningful work consistently. A green contribution graph is not a substitute for a useful repository."),
-            ("Interview readiness matters", "For every important topic, be able to explain what it is, when to use it, alternatives, failure modes and one implementation."),
+            ("Interview readiness matters", "For every important topic, explain what it is, when to use it, alternatives, failure modes and one implementation."),
         ]
-        for title, body in rules:
-            st.markdown(f"**{title}**  \n{body}")
-        st.caption("Suggested weekly review: choose the next unfinished high-priority topic, check blockers, and decide what evidence will prove completion.")
+        for title,body in rules:
+            st.markdown(f'<div class="month-card"><b style="color:#8f263e">{title}</b><p style="margin:.35rem 0 0">{body}</p></div>', unsafe_allow_html=True)
 
-    st.sidebar.divider()
-    st.sidebar.caption("Cloud sync is active when signed in. Changes are stored in Supabase and load on every device after sign-in.")
-
+    with st.expander("Your profile & account", expanded=False):
+        with st.form("profile_form"):
+            roles = ["AI Engineer", "Applied AI Engineer", "AI Solution Architect", "ML Engineer", "Other"]
+            display_name = st.text_input("Your name / nickname", value=profile.get("display_name", ""))
+            saved_role = profile.get("target_role", "AI Engineer")
+            target_role = st.selectbox("Target role", roles, index=roles.index(saved_role) if saved_role in roles else 0)
+            journey_notes = st.text_area("Personal goals / context", value=profile.get("journey_notes", ""), placeholder="Your goals, milestones or constraints")
+            profile_saved = st.form_submit_button("Save my journey")
+        if profile_saved:
+            try:
+                save_profile(client, display_name, target_role, journey_notes)
+                st.success("Your journey is saved ♡")
+                st.rerun()
+            except Exception as exc:
+                st.error(f"Could not save profile: {exc}")
+    st.markdown('<div class="footer">Made with a little love and a lot of consistency · StudyBae ♥</div>', unsafe_allow_html=True)
+    if st.button("Sign out", key="signout_bottom"):
+        logout()
 
 if "user_id" not in st.session_state:
+    brandbar()
+    st.markdown("""
+    <section class="hero"><div class="hero-copy">
+      <div class="eyebrow">Welcome to your little study corner</div>
+      <h1>Two minds.<br>One beautiful journey.</h1>
+      <p>Build skills, keep promises to yourselves, and celebrate every tiny win. Your progress stays private to your account.</p>
+      <div class="hero-note">♡ Study together. Grow together. ♡</div>
+    </div></section>
+    """, unsafe_allow_html=True)
+    st.write("")
     auth_screen(get_client())
 else:
     main()
